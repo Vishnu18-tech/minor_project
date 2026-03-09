@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>InternMatch AI — Smart Internship Finder</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/static/css/style.css"/>
+</head>
+<body>
+
+<!-- LANDING -->
+<section id="page-landing" class="page active">
+  <div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div>
+  <div class="landing-inner">
+    <div class="badge"><span class="pulse-dot">●</span> AI-Powered · 100+ Internships · Resume Upload</div>
+    <h1>Your Resume.<br><span class="grad">Your Internship.</span></h1>
+    <p class="landing-sub">Upload your resume OR fill your profile — AI finds the best internships matching <strong>your field & skills</strong>.</p>
+    <div class="feature-pills">
+      <span>📄 Resume Upload</span><span>📊 Match % Score</span>
+      <span>🌍 India + Abroad</span><span>🚀 Direct Apply</span>
+    </div>
+    <div class="landing-btns">
+      <button class="btn-primary" onclick="showPage('page-form')">Fill Profile →</button>
+      <button class="btn-secondary" onclick="document.getElementById('resume-upload').click()">📄 Upload Resume</button>
+      <input type="file" id="resume-upload" accept=".pdf" style="display:none" onchange="handleResume(this)"/>
+    </div>
+    <div class="field-tags">
+      <span>💻 CSE/IT</span><span>🧠 AI/ML</span><span>🏗️ Civil/Mech</span>
+      <span>📊 MBA</span><span>🎨 Design</span><span>🏥 Medical</span>
+    </div>
+  </div>
+</section>
+
+<!-- FORM -->
+<section id="page-form" class="page">
+  <div class="form-wrap">
+    <button class="btn-back" onclick="showPage('page-landing')">← Back</button>
+    <div class="card">
+      <div class="form-header">
+        <h2>Your Profile</h2>
+        <p>AI will match internships based on <strong>your field & skills</strong>.</p>
+      </div>
+      <div class="resume-shortcut">
+        <span>⚡ Shortcut:</span>
+        <button onclick="document.getElementById('resume-upload2').click()">📄 Auto-fill from Resume PDF</button>
+        <input type="file" id="resume-upload2" accept=".pdf" style="display:none" onchange="handleResume(this)"/>
+      </div>
+      <div class="form-grid">
+        <div class="field"><label>Full Name</label><input id="f-name" type="text" placeholder="e.g. Ravi Kumar"/></div>
+        <div class="field"><label>Degree / Education</label><input id="f-education" type="text" placeholder="e.g. B.Tech Civil, JNTU 3rd Year"/></div>
+        <div class="field"><label>Your Skills</label><input id="f-skills" type="text" placeholder="e.g. AutoCAD, STAAD Pro  OR  Python, SQL"/></div>
+        <div class="field"><label>GPA / Percentage</label><input id="f-gpa" type="text" placeholder="e.g. 8.2/10 or 78%"/></div>
+        <div class="field"><label>Interests</label><input id="f-interests" type="text" placeholder="e.g. Structural Design, Site Work"/></div>
+        <div class="field full"><label>Career Goals</label><textarea id="f-goals" rows="2" placeholder="e.g. Want to work on highway projects in India"></textarea></div>
+        <div class="field">
+          <label>Experience Level</label>
+          <select id="f-experience">
+            <option>Beginner (1st/2nd Year)</option>
+            <option>Intermediate (3rd Year)</option>
+            <option>Advanced (Final Year)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Preferred Location</label>
+          <select id="f-location">
+            <option>Any</option><option>Hyderabad</option><option>Bangalore</option>
+            <option>Mumbai</option><option>Delhi</option><option>Chennai</option>
+            <option>Pune</option><option>Remote</option><option>Abroad</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn-primary full-btn" onclick="analyzeProfile()">🤖 Find My Internships</button>
+    </div>
+  </div>
+</section>
+
+<!-- ANALYZING -->
+<section id="page-analyzing" class="page">
+  <div class="analyzing-wrap">
+    <div class="spinner"></div>
+    <h2 id="analyze-title">Finding Your Best Matches...</h2>
+    <div id="analysis-steps" class="steps-list"></div>
+  </div>
+</section>
+
+<!-- RESULTS -->
+<section id="page-results" class="page">
+  <div class="results-header">
+    <div class="results-logo">
+      <div class="logo-icon">🎯</div>
+      <div><div class="logo-title">InternMatch AI</div><div class="logo-sub" id="results-subtitle"></div></div>
+    </div>
+    <button class="btn-back" onclick="resetApp()">🔄 New Search</button>
+  </div>
+  <div class="results-body">
+    <div class="results-left">
+      <!-- Score -->
+      <div class="card score-card">
+        <div class="score-ring-wrap">
+          <svg width="100" height="100">
+            <circle cx="50" cy="50" r="40" fill="none" stroke="#1a1a2e" stroke-width="8"/>
+            <circle id="score-circle" cx="50" cy="50" r="40" fill="none" stroke="#00f5a0" stroke-width="8"
+              stroke-dasharray="251.2" stroke-dashoffset="251.2" stroke-linecap="round"
+              style="transform:rotate(-90deg);transform-origin:50% 50%;transition:stroke-dashoffset 1.5s ease"/>
+          </svg>
+          <div class="score-label"><span id="score-num">0</span><small>SCORE</small></div>
+        </div>
+        <div class="score-text">
+          <div class="section-label">Profile Strength</div>
+          <p id="strength-summary"></p>
+        </div>
+      </div>
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('matches',this)">🎯 Matches</button>
+        <button class="tab" onclick="switchTab('path',this)">🛣️ Career Path</button>
+        <button class="tab" onclick="switchTab('gaps',this)">📈 Skill Gaps</button>
+      </div>
+      <!-- Matches Tab -->
+      <div id="tab-matches" class="tab-content active">
+        <div class="filters-bar">
+          <input id="filter-search" type="text" placeholder="🔍 Search title, company, skill..." oninput="applyFilters()"/>
+          <div class="filter-row">
+            <select id="filter-field"    onchange="applyFilters()"><option value="">All Fields</option></select>
+            <select id="filter-location" onchange="applyFilters()"><option value="">All Locations</option></select>
+            <select id="filter-stipend"  onchange="applyFilters()">
+              <option value="">Any Stipend</option>
+              <option value="free">Unpaid</option><option value="10k">₹10k+</option>
+              <option value="30k">₹30k+</option><option value="50k">₹50k+</option>
+            </select>
+            <button class="btn-clear" onclick="clearFilters()">✕ Clear</button>
+          </div>
+          <div id="match-count" class="match-count"></div>
+        </div>
+        <div id="matches-list"></div>
+      </div>
+      <!-- Path Tab -->
+      <div id="tab-path" class="tab-content">
+        <div class="card">
+          <div class="section-label" style="margin-bottom:12px">Recommended Career Path</div>
+          <p id="career-path" style="color:#ccc;line-height:1.8;font-size:15px"></p>
+          <div style="margin-top:20px">
+            <div class="section-label" style="margin-bottom:12px">Quick Tips</div>
+            <div id="quick-tips"></div>
+          </div>
+        </div>
+      </div>
+      <!-- Gaps Tab -->
+      <div id="tab-gaps" class="tab-content">
+        <div class="card">
+          <div class="section-label" style="margin-bottom:14px">Skills to Develop</div>
+          <div id="skill-gaps-list" class="skills-wrap"></div>
+          <div class="tip-box" style="margin-top:20px">
+            <div class="tip-title">💡 Pro Tip</div>
+            <p>Focus on 1–2 skills. Even small projects using these will boost your chances significantly.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Chat -->
+    <div class="chat-panel card">
+      <div class="chat-header">
+        <div class="chat-title">🤖 AI Career Advisor</div>
+        <div class="chat-sub">Ask anything about your matches</div>
+      </div>
+      <div id="chat-messages" class="chat-messages"></div>
+      <div class="chat-input-area">
+        <div class="chat-input-row">
+          <input id="chat-input" type="text" placeholder="e.g. How do I apply? What skills do I need?"/>
+          <button class="btn-send" onclick="sendChat()">↑</button>
+        </div>
+        <div class="quick-questions">
+          <button onclick="quickAsk('Which internship should I apply first?')">Apply first?</button>
+          <button onclick="quickAsk('How can I improve my profile?')">Improve profile</button>
+          <button onclick="quickAsk('What skills to learn next?')">Skills to learn</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script src="/static/js/main.js"></script>
+</body>
+</html>
