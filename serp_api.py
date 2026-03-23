@@ -1,10 +1,10 @@
 import json, re, os
-from dotenv import load_dotenv
+from dotenv import load_dotenv # type: ignore
 
 load_dotenv()
 
 try:
-    import requests as _req
+    import requests as _req # type: ignore
     USE_REQUESTS = True
 except ImportError:
     import urllib.request, urllib.parse
@@ -74,7 +74,7 @@ def fetch_live_internships(profile, top_n=15):
     field     = detect_field(education + ' ' + skills)
 
     # Build queries
-    skill_list = [s.strip() for s in skills.split(',') if s.strip()][:2]
+    skill_list = [s.strip() for s in skills.split(',') if s.strip()][:2] # type: ignore
     queries = []
     if skill_list:
         queries.append(' '.join(skill_list) + ' internship India 2025')
@@ -110,6 +110,17 @@ def fetch_live_internships(profile, top_n=15):
                 seen.add(key)
 
                 loc  = job.get("location", "India")
+                loc_lower = loc.lower()
+
+                # Filter out foreign locations explicitly
+                if re.search(r'\b(usa|us|uk|united states|united kingdom|canada|europe|australia|new york|california|london)\b', loc_lower) and 'india' not in loc_lower:
+                    continue
+                
+                # Must contain 'india', a major Indian city, or be 'remote'
+                indian_terms = ['india', 'bengaluru', 'bangalore', 'mumbai', 'pune', 'hyderabad', 'chennai', 'delhi', 'ncr', 'noida', 'gurgaon', 'gurugram', 'kolkata', 'remote']
+                if not any(it in loc_lower for it in indian_terms):
+                    continue
+
                 desc = job.get("description", "")
                 via  = job.get("via", "")
 
@@ -163,7 +174,7 @@ def fetch_live_internships(profile, top_n=15):
 
     results.sort(key=lambda x: x['matchScore'], reverse=True)
     print(f"  ✅ Total internships returned: {len(results)}")
-    return results[:top_n]
+    return results[:top_n] # type: ignore
 
 def calculate_match(profile, title, description):
     score     = 45
@@ -188,4 +199,4 @@ def extract_skills(description):
               'TypeScript','C++','Docker','TensorFlow','Photoshop','Power BI',
               'R','Django','Flask','MongoDB','MySQL','HTML','CSS','Angular','Kotlin']
     found = [s for s in common if s.lower() in description.lower()]
-    return found[:5] if found else ['Communication', 'Problem Solving']
+    return found[:5] if found else ['Communication', 'Problem Solving'] # type: ignore

@@ -1,9 +1,9 @@
-from flask import Flask, request, jsonify, render_template
-from groq import Groq
-from pypdf import PdfReader
-from serp_api import fetch_live_internships
+from flask import Flask, request, jsonify, render_template # type: ignore
+from groq import Groq # type: ignore
+from pypdf import PdfReader # type: ignore
+from serp_api import fetch_live_internships # type: ignore
 import json, io, traceback, os
-from dotenv import load_dotenv
+from dotenv import load_dotenv # type: ignore
 
 load_dotenv()
 
@@ -17,7 +17,7 @@ def extract_pdf_text(file_bytes):
         for page in reader.pages:
             try: text += page.extract_text() or ""
             except: pass
-        return text[:3000]
+        return text[:3000] # type: ignore
     except Exception as e:
         print(f"PDF error: {e}")
         return ""
@@ -40,8 +40,9 @@ def parse_resume():
         if not text.strip():
             return jsonify({"error": "Could not read PDF. Try a different resume."}), 400
 
+        resume_text = text[:2000] # type: ignore
         prompt = f"""Extract from this resume: name, education, skills, GPA, interests, goals.
-Resume: {text[:2000]}
+Resume: {resume_text}
 Return ONLY JSON (no markdown):
 {{"name":"","education":"","skills":"","gpa":"","interests":"","goals":"","experience":"Beginner"}}"""
 
@@ -85,20 +86,40 @@ def analyze():
             f"{i['title']} @ {i['company']} | {i['location']}"
             for i in live_results[:6]
         ])
-        prompt = f"""You are an expert internship advisor for Indian students.
+        prompt = f"""You are an elite career counselor and internship advisor. Your goal is to critically analyze the student's profile and provide actionable, highly relevant advice aligned with current market data.
 
-Student Profile:
-- Name: {profile.get('name','Student')}
-- Education: {profile.get('education','')}
-- Skills: {profile.get('skills','')}
-- GPA: {profile.get('gpa','')}
-- Goals: {profile.get('goals','')}
+### Context
+- Evaluate the student's education, skills, and goals against typical industry expectations for their desired roles.
+- Tailor your recommendations specifically toward the provided live internships.
+- Provide objective, highly specific, and constructive feedback.
 
-Live internships found via Google Jobs:
-{internship_list if internship_list else 'Various internships available'}
+### Student Profile
+- Name: {profile.get('name', 'Student')}
+- Education: {profile.get('education', 'Unknown')}
+- Skills: {profile.get('skills', 'None provided')}
+- GPA: {profile.get('gpa', 'Not provided')}
+- Goals: {profile.get('goals', 'General career growth')}
 
-Return ONLY this JSON (no markdown):
-{{"profileScore":75,"strengthSummary":"2 sentences about strengths","careerPath":"2 sentences about career","skillGaps":["skill1","skill2","skill3"],"quickTips":["tip1","tip2","tip3"]}}"""
+### Live Internship Opportunities
+{internship_list if internship_list else 'No specific live internships provided; offer general industry-standard advice.'}
+
+### Analysis Instructions
+1. profileScore: Evaluate profile strength as an integer (0-100) based on how well they match the live opportunities.
+2. strengthSummary: Write exactly 2 concise, impactful sentences highlighting their core marketable strengths.
+3. careerPath: Write exactly 2 concise sentences suggesting the most viable immediate internship roles and long-term trajectory.
+4. skillGaps: List exactly 3 critical missing skills or tools they must learn to be competitive for the listed internships.
+5. quickTips: List exactly 3 highly actionable, immediate steps the student should take right now to improve their profile.
+
+### Output Format Specification
+You MUST return ONLY a strictly valid JSON object. Do NOT wrap the JSON in markdown blocks (no ```json). Do NOT add any conversational text before or after the JSON.
+
+{{
+  "profileScore": 85,
+  "strengthSummary": "Your string here",
+  "careerPath": "Your string here",
+  "skillGaps": ["Skill 1", "Skill 2", "Skill 3"],
+  "quickTips": ["Tip 1", "Tip 2", "Tip 3"]
+}}"""
 
         try:
             res = client.chat.completions.create(
