@@ -3,3 +3,4 @@ groq
 pypdf
 requests
 python-dotenv
+gunicorn
