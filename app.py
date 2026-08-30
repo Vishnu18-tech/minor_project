@@ -289,11 +289,5 @@ def chat():
 # ==================== APPLICATION ENTRY POINT ====================
 
 if __name__ == "__main__":
-    print("\n" + "="*60)
-    print("🚀 InternMatch AI - Internship Matching Platform")
-    print("🔗 Powered by Google Jobs (SerpApi) & Groq AI")
-    print("="*60)
-    print("📍 Open: http://127.0.0.1:5000")
-    print("="*60 + "\n")
-    
-    app.run(debug=True)
+    port = int(os.getenv("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=False)
